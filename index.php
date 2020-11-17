@@ -1,6 +1,13 @@
 <?php
 
-echo'
+require_once 'vendor/autoload.php';
+
+use Ballen\Distical\Calculator as DistanceCalculator;
+use Ballen\Distical\Entities\LatLong;
+use SujalPatel\IntToEnglish\IntToEnglish;
+
+try {
+    echo '
 
 <!DOCTYPE html>
 <html>
@@ -56,23 +63,23 @@ echo'
             <div class="row">
                 
                 <div class="input-field col s2">
-                    <label for="n_entero">Introduce la Latitud Punto 1:</label>
-                    <input name="n_entero" type="text" class="validate">
+                    <label for="lat1">Introduce la Latitud Punto 1:</label>
+                    <input name="lat1" type="text" class="validate">
                     
                 </div>
                 <div class="input-field col s2">
-                    <label for="n_entero">Introduce la Longitud  Punto 1:</label>
-                    <input name="n_entero" type="text" class="validate">
+                    <label for="long1">Introduce la Longitud  Punto 1:</label>
+                    <input name="long1" type="text" class="validate">
                 
                 </div>
                 <div class="input-field col s2">
-                    <label for="n_entero">Introduce la Latitud Punto 2:</label>
-                    <input name="n_entero" type="text" class="validate">
+                    <label for="lat2">Introduce la Latitud Punto 2:</label>
+                    <input name="lat2" type="text" class="validate">
                 
                 </div>
                 <div class="input-field col s2">
-                    <label for="n_entero">Introduce la Longitud  Punto 2:</label>
-                    <input name="n_entero" type="text" class="validate">
+                    <label for="long2">Introduce la Longitud  Punto 2:</label>
+                    <input name="long2" type="text" class="validate">
                 
                 </div>
                
@@ -88,11 +95,35 @@ echo'
                 
             </div>
         </form>
+        ';
+
+    if (isset($_REQUEST['calcular'])) {
+        //Cojo los input sin que me puedan meter ningún script
+        $lat1 = htmlspecialchars($_REQUEST['lat1']);
+        $long1 = htmlspecialchars($_REQUEST['long2']);
+        $lat2 = htmlspecialchars($_REQUEST['lat2']);
+        $long2 = htmlspecialchars($_REQUEST['long2']);
+        //Los datos recogidos los transformo a coordenadas
+        $ipValladolid = new LatLong($lat1, $long1);
+        $ipSevilla = new LatLong($lat2, $long2);
+        //Calculo la distancia entre ambas coordenadas
+        $distanceCalculator = new DistanceCalculator($ipValladolid, $ipSevilla);
+        //Obtengo la distancia en km y la paso a entero
+        $distance = (int)$distanceCalculator->get()->asKilometres();
+        //Saco por pantalla la distancia
+        echo '<div class="col s12">';
+        echo '<p>La distancia entre Valladolid y Sevilla es de: ' . $distance . '</p>';
+        //Saco por pantalla la distancia en inglés
+        echo '<p>La distancia entre esos dos punto en inglés es de: ' . IntToEnglish::Int2Eng($distance) . '</p>';
+        echo '</div>';
+    }
+    echo '
     </div>
     <!--JavaScript at end of body for optimized loading-->
     <script type="text/javascript" src="js/materialize.min.js"></script>
 </body>
 
 </html>';
-
-
+} catch (Exception $e) {
+    echo 'Excepción capturada: ',  $e->getMessage(), "\n";
+}
